@@ -2,7 +2,7 @@
 
 Data Structures in Rust
 
-- [ ] List
+- [ ] Lists
   - [ ] DynamicArray -> Vector
   - [ ] SinglyLinkedList
   - [ ] DoublyLinkedList
@@ -32,7 +32,10 @@ Data Structures in Rust
   - [ ] BTreeSet
   - [ ] LinkedHashMap
 - [ ] Sets
+
   - [ ] HashSet
   - [ ] TreeSet
   - [ ] BTreeSet
   - [ ] LinkedHashSet
+
+  Other Todo:
