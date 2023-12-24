@@ -1,6 +1,6 @@
 # Dust
 
-Data Structures in Rust - I imagine I'll come back to this add other data structures as well as algorithms at some point
+Data Structures in Rust
 
 - [ ] List
   - [ ] DynamicArray -> Vector
