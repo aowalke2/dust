@@ -3,9 +3,9 @@
 Data Structures in Rust
 
 - [ ] Lists
-  - [ ] DynamicArray -> Vector
+  - [ ] Vec
   - [ ] SinglyLinkedList
-  - [ ] DoublyLinkedList
+  - [ ] LinkedList (will be a Doubly Linked List under the hood)
 - [ ] Stacks
   - [ ] LinkedListStack
   - [ ] VecStack
@@ -14,14 +14,15 @@ Data Structures in Rust
   - [ ] VecQueue
   - [ ] CircularBuffer
 - [ ] Double Ended Queue (Deque)
-  - [ ] VecDeque
   - [ ] LinkedListDeque
+  - [ ] VecDeque
 - [ ] Trees
   - [ ] Binary Tree
   - [ ] Binary Search Tree
   - [ ] AVLTree
   - [ ] RedBlackTree
   - [ ] B-Tree
+  - [ ] B<sup>+</sup>-Tree
   - [ ] Tries
 - [ ] Heaps
   - [ ] BinaryHeap
@@ -32,10 +33,9 @@ Data Structures in Rust
   - [ ] BTreeSet
   - [ ] LinkedHashMap
 - [ ] Sets
-
   - [ ] HashSet
   - [ ] TreeSet
   - [ ] BTreeSet
   - [ ] LinkedHashSet
 
-  Other Todo:
+Other Todo:
