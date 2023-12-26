@@ -2,12 +2,12 @@ use std::fmt::{self, Display, Formatter};
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 
-struct Node<T: Copy> {
+struct Node<T: Copy + PartialEq> {
     data: T,
     next: Option<NonNull<Node<T>>>,
 }
 
-impl<T: Copy> Node<T> {
+impl<T: Copy + PartialEq> Node<T> {
     fn new(data: T) -> Self {
         Node {
             data: data,
@@ -16,13 +16,13 @@ impl<T: Copy> Node<T> {
     }
 }
 
-pub struct LinkedList<T: Copy> {
+pub struct LinkedList<T: Copy + PartialEq> {
     len: usize,
     head: Option<NonNull<Node<T>>>,
     marker: PhantomData<Box<Node<T>>>,
 }
 
-impl<T: Copy> LinkedList<T> {
+impl<T: Copy + PartialEq> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             len: 0,
@@ -58,7 +58,40 @@ impl<T: Copy> LinkedList<T> {
         self.len += 1
     }
 
-    pub fn insert(&mut self, index: usize, data: T) {}
+    pub fn insert(&mut self, index: usize, data: T) {
+        if self.len < index {
+            panic!("Index out of bounds")
+        }
+
+        if index == 0 || self.head.is_none() {
+            self.push_front(data);
+            return;
+        }
+
+        if self.len == index {
+            self.push_back(data);
+            return;
+        }
+
+        let mut curr = self.head;
+        let mut count = 0;
+
+        while let Some(curr_ptr) = curr {
+            if count == index - 1 {
+                let mut node = Box::new(Node::new(data));
+                node.next = unsafe { (*curr_ptr.as_ptr()).next };
+                let node_ptr = NonNull::new(Box::into_raw(node));
+                unsafe {
+                    (*curr_ptr.as_ptr()).next = node_ptr;
+                }
+                self.len += 1;
+                return;
+            }
+
+            count += 1;
+            curr = unsafe { (*curr_ptr.as_ptr()).next };
+        }
+    }
 
     pub fn pop_front(&mut self) -> Option<T> {
         if self.len == 0 {
@@ -73,19 +106,121 @@ impl<T: Copy> LinkedList<T> {
         })
     }
 
-    pub fn get(&self, index: i32) -> Option<&T> {
-        Self::get_ith_node(self.head, index).map(|ptr| unsafe { &(*ptr.as_ptr()).data })
+    pub fn pop_back(&mut self) -> Option<T> {
+        if self.len == 0 {
+            return None;
+        }
+
+        if self.len == 1 {
+            let head = self.head.take();
+            self.len = 0;
+            return head.map(|head_ptr| unsafe {
+                let head = Box::from_raw(head_ptr.as_ptr());
+                head.data
+            });
+        }
+
+        let mut curr = self.head;
+        let mut prev: Option<NonNull<Node<T>>> = None;
+
+        while let Some(curr_ptr) = curr {
+            if unsafe { (*curr_ptr.as_ptr()).next.is_none() } {
+                if let Some(prev_ptr) = prev {
+                    unsafe {
+                        (*prev_ptr.as_ptr()).next = None;
+                    }
+                    self.len -= 1;
+                    return Some(unsafe {
+                        let last_node = Box::from_raw(curr_ptr.as_ptr());
+                        last_node.data
+                    });
+                }
+            }
+
+            prev = curr;
+            curr = unsafe { (*curr_ptr.as_ptr()).next };
+        }
+
+        None
     }
 
-    fn get_ith_node(node: Option<NonNull<Node<T>>>, index: i32) -> Option<NonNull<Node<T>>> {
-        // recursion
-        match node {
-            None => None,
-            Some(next_ptr) => match index {
-                0 => Some(next_ptr),
-                _ => Self::get_ith_node(unsafe { (*next_ptr.as_ptr()).next }, index - 1),
-            },
+    pub fn remove(&mut self, index: usize) -> Option<T> {
+        if self.len <= index {
+            panic!("Index out of bounds")
         }
+
+        if index == 0 || self.head.is_none() {
+            return self.pop_front();
+        }
+
+        if self.len - 1 == index {
+            return self.pop_back();
+        }
+
+        let mut curr = self.head;
+        let mut prev: Option<NonNull<Node<T>>> = None;
+        let mut count = 0;
+
+        while let Some(curr_ptr) = curr {
+            if count == index {
+                if let Some(prev_ptr) = prev {
+                    unsafe {
+                        (*prev_ptr.as_ptr()).next = (*curr_ptr.as_ptr()).next;
+                    }
+                    self.len -= 1;
+                    return Some(unsafe {
+                        let node = Box::from_raw(curr_ptr.as_ptr());
+                        node.data
+                    });
+                }
+            }
+
+            count += 1;
+            prev = curr;
+            curr = unsafe { (*curr_ptr.as_ptr()).next };
+        }
+
+        None
+    }
+
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
+    pub fn get(&self, index: usize) -> Option<&T> {
+        if self.len <= index {
+            panic!("Index out of bounds")
+        }
+
+        let mut curr = self.head;
+        let mut count = 0;
+        while let Some(curr_ptr) = curr {
+            if count == index {
+                return Some(unsafe { &(*curr_ptr.as_ptr()).data });
+            }
+
+            curr = unsafe { (*curr_ptr.as_ptr()).next };
+            count += 1
+        }
+
+        None
+    }
+
+    pub fn contains(&self, data: T) -> bool {
+        let mut curr = self.head;
+        while let Some(curr_ptr) = curr {
+            if unsafe { (*curr_ptr.as_ptr()).data == data } {
+                return true;
+            }
+
+            curr = unsafe { (*curr_ptr.as_ptr()).next };
+        }
+
+        false
     }
 
     pub fn collect(&self) -> Vec<T> {
@@ -103,13 +238,13 @@ impl<T: Copy> LinkedList<T> {
     }
 }
 
-impl<T: Copy> Drop for LinkedList<T> {
+impl<T: Copy + PartialEq> Drop for LinkedList<T> {
     fn drop(&mut self) {
         while self.pop_front().is_some() {}
     }
 }
 
-impl<T: Copy + Display> Display for LinkedList<T> {
+impl<T: Copy + PartialEq + Display> Display for LinkedList<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.head {
             Some(node) => write!(f, "{}", unsafe { node.as_ref() }),
@@ -118,7 +253,7 @@ impl<T: Copy + Display> Display for LinkedList<T> {
     }
 }
 
-impl<T: Copy + Display> Display for Node<T> {
+impl<T: Copy + PartialEq + Display> Display for Node<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self.next {
             Some(node) => write!(f, "{} {}", self.data, unsafe { node.as_ref() }),
@@ -129,6 +264,8 @@ impl<T: Copy + Display> Display for Node<T> {
 
 #[cfg(test)]
 mod tests {
+    use std::ops::RangeBounds;
+
     use super::LinkedList;
 
     #[test]
@@ -156,6 +293,38 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
+    fn insert_panics() {
+        let mut list = LinkedList::new();
+        list.push_back(1);
+        list.push_back(2);
+        list.push_back(3);
+
+        list.insert(4, 5)
+    }
+
+    #[test]
+    fn insert_works() {
+        let mut list = LinkedList::new();
+        list.insert(0, 1);
+        list.insert(1, 3);
+        list.insert(1, 2);
+
+        println!("list: {}", list);
+
+        let vec = list.collect();
+        assert_eq!(vec, vec![1, 2, 3])
+    }
+
+    #[test]
+    fn pop_front_returns_none_for_empty_list() {
+        let mut list: LinkedList<i32> = LinkedList::new();
+        println!("list: {}", list);
+
+        assert_eq!(list.pop_front(), None)
+    }
+
+    #[test]
     fn pop_front_works() {
         let mut list = LinkedList::new();
         list.push_front(1);
@@ -165,7 +334,7 @@ mod tests {
 
         match list.pop_front() {
             Some(val) => assert_eq!(val, 3),
-            None => panic!("Expected to find {} a index 0", 3),
+            None => panic!("Expected to find {}", 3),
         }
 
         let vec = list.collect();
@@ -173,10 +342,119 @@ mod tests {
     }
 
     #[test]
-    fn pop_front_returns_none_for_empty_list() {
+    fn pop_back_returns_none_for_empty_list() {
         let mut list: LinkedList<i32> = LinkedList::new();
         println!("list: {}", list);
 
-        assert_eq!(list.pop_front(), None)
+        assert_eq!(list.pop_back(), None)
+    }
+
+    #[test]
+    fn pop_back_works() {
+        let mut list = LinkedList::new();
+        list.push_back(1);
+        list.push_back(2);
+        list.push_back(3);
+        println!("list: {}", list);
+
+        match list.pop_back() {
+            Some(val) => assert_eq!(val, 3),
+            None => panic!("Expected to find {}", 3),
+        }
+
+        let vec = list.collect();
+        assert_eq!(vec, vec![1, 2]);
+
+        match list.pop_back() {
+            Some(val) => assert_eq!(val, 2),
+            None => panic!("Expected to find {}", 2),
+        }
+
+        match list.pop_back() {
+            Some(val) => assert_eq!(val, 1),
+            None => panic!("Expected to find {}", 1),
+        }
+    }
+
+    #[test]
+    #[should_panic]
+    fn remove_panics() {
+        let mut list = LinkedList::new();
+        list.push_back(1);
+        list.push_back(2);
+        list.push_back(3);
+
+        list.remove(4);
+    }
+
+    #[test]
+    fn remove_works() {
+        let mut list = LinkedList::new();
+        list.insert(0, 1);
+        list.insert(1, 3);
+        list.insert(1, 2);
+        list.insert(3, 4);
+        list.insert(4, 5);
+
+        match list.remove(0) {
+            Some(val) => assert_eq!(val, 1),
+            None => panic!("Expected to find {}", 1),
+        }
+
+        match list.remove(3) {
+            Some(val) => assert_eq!(val, 5),
+            None => panic!("Expected to find {}", 5),
+        }
+
+        println!("list: {}", list);
+
+        match list.remove(1) {
+            Some(val) => assert_eq!(val, 3),
+            None => panic!("Expected to find {}", 3),
+        }
+
+        let vec = list.collect();
+        assert_eq!(vec, vec![2, 4])
+    }
+
+    #[test]
+    #[should_panic]
+    fn get_panics() {
+        let mut list = LinkedList::new();
+        list.push_back(1);
+        list.push_back(2);
+        list.push_back(3);
+
+        list.get(4);
+    }
+
+    #[test]
+    fn get_works() {
+        let mut list = LinkedList::new();
+        list.push_back(1);
+        list.push_back(2);
+        list.push_back(3);
+
+        match list.get(1) {
+            Some(val) => assert_eq!(*val, 2),
+            None => panic!("Expected to find {}", 2),
+        }
+
+        let vec = list.collect();
+        assert_eq!(vec, vec![1, 2, 3])
+    }
+
+    #[test]
+    fn contains_works() {
+        let mut list = LinkedList::new();
+        list.push_back(1);
+        list.push_back(2);
+        list.push_back(3);
+
+        assert!(list.contains(2));
+        assert!(!list.contains(5));
+
+        let vec = list.collect();
+        assert_eq!(vec, vec![1, 2, 3])
     }
 }

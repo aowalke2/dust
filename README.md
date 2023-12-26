@@ -3,9 +3,9 @@
 Data Structures in Rust
 
 - [ ] Lists
-  - [ ] Vec
-  - [ ] SinglyLinkedList
-  - [ ] LinkedList (will be a Doubly Linked List under the hood)
+  - [ ] Vec (covered in [The Rustonomicon](https://doc.rust-lang.org/nomicon/vec/vec.html) 🦀💀)
+  - [x] SinglyLinkedList
+  - [ ] LinkedList (Doubly Linked List under the hood)
 - [ ] Stacks
   - [ ] LinkedListStack
   - [ ] VecStack
@@ -23,6 +23,7 @@ Data Structures in Rust
   - [ ] RedBlackTree
   - [ ] B-Tree
   - [ ] B<sup>+</sup>-Tree
+  - [ ] Log-Structured Merge Trees (LSM Trees)
   - [ ] Tries
 - [ ] Heaps
   - [ ] BinaryHeap
