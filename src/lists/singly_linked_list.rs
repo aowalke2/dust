@@ -16,13 +16,13 @@ impl<T: Copy + PartialEq> Node<T> {
     }
 }
 
-pub struct LinkedList<T: Copy + PartialEq> {
+pub struct SinglyLinkedList<T: Copy + PartialEq> {
     len: usize,
     head: Option<NonNull<Node<T>>>,
     marker: PhantomData<Box<Node<T>>>,
 }
 
-impl<T: Copy + PartialEq> LinkedList<T> {
+impl<T: Copy + PartialEq> SinglyLinkedList<T> {
     pub fn new() -> Self {
         Self {
             len: 0,
@@ -238,13 +238,13 @@ impl<T: Copy + PartialEq> LinkedList<T> {
     }
 }
 
-impl<T: Copy + PartialEq> Drop for LinkedList<T> {
+impl<T: Copy + PartialEq> Drop for SinglyLinkedList<T> {
     fn drop(&mut self) {
         while self.pop_front().is_some() {}
     }
 }
 
-impl<T: Copy + PartialEq + Display> Display for LinkedList<T> {
+impl<T: Copy + PartialEq + Display> Display for SinglyLinkedList<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.head {
             Some(node) => write!(f, "{}", unsafe { node.as_ref() }),
@@ -264,11 +264,11 @@ impl<T: Copy + PartialEq + Display> Display for Node<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::LinkedList;
+    use super::SinglyLinkedList;
 
     #[test]
     fn push_front_works() {
-        let mut list = LinkedList::new();
+        let mut list = SinglyLinkedList::new();
         list.push_front(1);
         list.push_front(2);
         list.push_front(3);
@@ -280,7 +280,7 @@ mod tests {
 
     #[test]
     fn push_back_works() {
-        let mut list = LinkedList::new();
+        let mut list = SinglyLinkedList::new();
         list.push_back(1);
         list.push_back(2);
         list.push_back(3);
@@ -293,7 +293,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn insert_panics() {
-        let mut list = LinkedList::new();
+        let mut list = SinglyLinkedList::new();
         list.push_back(1);
         list.push_back(2);
         list.push_back(3);
@@ -303,7 +303,7 @@ mod tests {
 
     #[test]
     fn insert_works() {
-        let mut list = LinkedList::new();
+        let mut list = SinglyLinkedList::new();
         list.insert(0, 1);
         list.insert(1, 3);
         list.insert(1, 2);
@@ -316,7 +316,7 @@ mod tests {
 
     #[test]
     fn pop_front_returns_none_for_empty_list() {
-        let mut list: LinkedList<i32> = LinkedList::new();
+        let mut list: SinglyLinkedList<i32> = SinglyLinkedList::new();
         println!("list: {}", list);
 
         assert_eq!(list.pop_front(), None)
@@ -324,7 +324,7 @@ mod tests {
 
     #[test]
     fn pop_front_works() {
-        let mut list = LinkedList::new();
+        let mut list = SinglyLinkedList::new();
         list.push_front(1);
         list.push_front(2);
         list.push_front(3);
@@ -341,7 +341,7 @@ mod tests {
 
     #[test]
     fn pop_back_returns_none_for_empty_list() {
-        let mut list: LinkedList<i32> = LinkedList::new();
+        let mut list: SinglyLinkedList<i32> = SinglyLinkedList::new();
         println!("list: {}", list);
 
         assert_eq!(list.pop_back(), None)
@@ -349,7 +349,7 @@ mod tests {
 
     #[test]
     fn pop_back_works() {
-        let mut list = LinkedList::new();
+        let mut list = SinglyLinkedList::new();
         list.push_back(1);
         list.push_back(2);
         list.push_back(3);
@@ -377,7 +377,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn remove_panics() {
-        let mut list = LinkedList::new();
+        let mut list = SinglyLinkedList::new();
         list.push_back(1);
         list.push_back(2);
         list.push_back(3);
@@ -387,7 +387,7 @@ mod tests {
 
     #[test]
     fn remove_works() {
-        let mut list = LinkedList::new();
+        let mut list = SinglyLinkedList::new();
         list.insert(0, 1);
         list.insert(1, 3);
         list.insert(1, 2);
@@ -418,7 +418,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn get_panics() {
-        let mut list = LinkedList::new();
+        let mut list = SinglyLinkedList::new();
         list.push_back(1);
         list.push_back(2);
         list.push_back(3);
@@ -428,7 +428,7 @@ mod tests {
 
     #[test]
     fn get_works() {
-        let mut list = LinkedList::new();
+        let mut list = SinglyLinkedList::new();
         list.push_back(1);
         list.push_back(2);
         list.push_back(3);
@@ -444,7 +444,7 @@ mod tests {
 
     #[test]
     fn contains_works() {
-        let mut list = LinkedList::new();
+        let mut list = SinglyLinkedList::new();
         list.push_back(1);
         list.push_back(2);
         list.push_back(3);
