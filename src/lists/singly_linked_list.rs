@@ -264,8 +264,6 @@ impl<T: Copy + PartialEq + Display> Display for Node<T> {
 
 #[cfg(test)]
 mod tests {
-    use std::ops::RangeBounds;
-
     use super::LinkedList;
 
     #[test]
