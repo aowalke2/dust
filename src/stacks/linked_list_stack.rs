@@ -77,7 +77,7 @@ mod tests {
     #[test]
     fn pop_returns_none_for_empty_list() {
         let mut stack: LinkedListStack<i32> = LinkedListStack::new();
-        println!("list: {}", stack);
+        println!("stack: {}", stack);
 
         assert_eq!(stack.pop(), None);
         assert_eq!(stack.len(), 0);

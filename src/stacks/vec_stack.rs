@@ -74,7 +74,7 @@ mod tests {
     #[test]
     fn pop_returns_none_for_empty_list() {
         let mut stack: VecStack<i32> = VecStack::new();
-        println!("list: {}", stack);
+        println!("stack: {}", stack);
 
         assert_eq!(stack.pop(), None);
         assert_eq!(stack.len(), 0);

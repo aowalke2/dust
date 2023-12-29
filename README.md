@@ -9,10 +9,10 @@ Data Structures in Rust
 - [x] Stacks
   - [x] LinkedListStack
   - [x] VecStack
-- [ ] Queues
-  - [ ] LinkedListQueue
-  - [ ] VecQueue
-  - [ ] CircularBuffer
+- [x] Queues
+  - [x] LinkedListQueue
+  - [x] VecQueue
+  - [x] CircularBuffer
 - [ ] Double Ended Queue (Deque)
   - [ ] LinkedListDeque
   - [ ] VecDeque
@@ -38,7 +38,3 @@ Data Structures in Rust
   - [ ] TreeSet
   - [ ] BTreeSet
   - [ ] LinkedHashSet
-
-Other Todo:
-
-- [ ] Rust docs
