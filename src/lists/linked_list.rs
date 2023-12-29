@@ -36,27 +36,202 @@ impl<T: Copy + PartialEq> LinkedList<T> {
     }
 
     pub fn push_front(&mut self, data: T) {
-        panic!("Implement")
+        let mut node = Box::new(Node::new(data));
+        node.next = self.head;
+
+        let node_ptr = NonNull::new(Box::into_raw(node));
+        match self.head {
+            None => self.tail = node_ptr,
+            Some(head_ptr) => unsafe { (*head_ptr.as_ptr()).prev = node_ptr },
+        }
+
+        self.head = node_ptr;
+        self.len += 1;
     }
 
     pub fn push_back(&mut self, data: T) {
-        panic!("Implement")
+        let mut node = Box::new(Node::new(data));
+        node.prev = self.tail;
+
+        let node_ptr = NonNull::new(Box::into_raw(node));
+        match self.tail {
+            None => self.head = node_ptr,
+            Some(tail_ptr) => unsafe { (*tail_ptr.as_ptr()).next = node_ptr },
+        }
+
+        self.tail = node_ptr;
+        self.len += 1;
     }
 
     pub fn insert(&mut self, index: usize, data: T) {
-        panic!("Implement")
+        if self.len < index {
+            panic!("Index out of bounds")
+        }
+
+        if index == 0 || self.head.is_none() {
+            self.push_front(data);
+            return;
+        }
+
+        if self.len == index {
+            self.push_back(data);
+            return;
+        }
+
+        // Optimization to based on index distance from each end
+        if index + 1 <= self.len / 2 {
+            let mut curr = self.head;
+            let mut count = 0;
+
+            while let Some(curr_ptr) = curr {
+                if count == index {
+                    let mut node = Box::new(Node::new(data));
+
+                    unsafe {
+                        node.prev = (*curr_ptr.as_ptr()).prev;
+                        node.next = Some(curr_ptr);
+
+                        if let Some(prev_ptr) = (*curr_ptr.as_ptr()).prev {
+                            let node_ptr = NonNull::new(Box::into_raw(node));
+                            (*prev_ptr.as_ptr()).next = node_ptr;
+                            (*curr_ptr.as_ptr()).prev = node_ptr;
+                        }
+                    };
+
+                    self.len += 1;
+                    return;
+                }
+
+                count += 1;
+                curr = unsafe { (*curr_ptr.as_ptr()).next };
+            }
+        } else {
+            let mut curr = self.tail;
+            let mut count = self.len - 1;
+
+            while let Some(curr_ptr) = curr {
+                if count == index {
+                    let mut node = Box::new(Node::new(data));
+
+                    unsafe {
+                        node.prev = (*curr_ptr.as_ptr()).prev;
+                        node.next = Some(curr_ptr);
+
+                        if let Some(prev_ptr) = (*curr_ptr.as_ptr()).prev {
+                            let node_ptr = NonNull::new(Box::into_raw(node));
+                            (*prev_ptr.as_ptr()).next = node_ptr;
+                            (*curr_ptr.as_ptr()).prev = node_ptr;
+                        }
+                    };
+
+                    self.len += 1;
+                    return;
+                }
+
+                count -= 1;
+                curr = unsafe { (*curr_ptr.as_ptr()).prev };
+            }
+        }
     }
 
     pub fn pop_front(&mut self) -> Option<T> {
-        panic!("Implement")
+        if self.len == 0 {
+            return None;
+        }
+
+        self.head.map(|head_ptr| unsafe {
+            let old_head = Box::from_raw(head_ptr.as_ptr());
+            match old_head.next {
+                None => self.tail = None,
+                Some(mut next_ptr) => next_ptr.as_mut().prev = None,
+            }
+            self.head = old_head.next;
+            self.len -= 1;
+            old_head.data
+        })
     }
 
     pub fn pop_back(&mut self) -> Option<T> {
-        panic!("Implement")
+        if self.len == 0 {
+            return None;
+        }
+
+        self.tail.map(|tail_ptr| unsafe {
+            let old_tail = Box::from_raw(tail_ptr.as_ptr());
+            match old_tail.prev {
+                None => self.head = None,
+                Some(mut prev_ptr) => prev_ptr.as_mut().next = None,
+            }
+            self.tail = old_tail.prev;
+            self.len -= 1;
+            old_tail.data
+        })
     }
 
     pub fn remove(&mut self, index: usize) -> Option<T> {
-        panic!("Implement")
+        if self.len <= index {
+            panic!("Index out of bounds")
+        }
+
+        if index == 0 || self.head.is_none() {
+            return self.pop_front();
+        }
+
+        if self.len - 1 == index {
+            return self.pop_back();
+        }
+
+        if index + 1 <= self.len / 2 {
+            let mut curr = self.head;
+            let mut count = 0;
+
+            while let Some(curr_ptr) = curr {
+                if count == index {
+                    unsafe {
+                        let old_node = Box::from_raw(curr_ptr.as_ptr());
+                        if let Some(mut prev) = old_node.prev {
+                            prev.as_mut().next = old_node.next;
+                        };
+
+                        if let Some(mut next) = old_node.next {
+                            next.as_mut().prev = old_node.prev;
+                        }
+
+                        self.len -= 1;
+                        return Some(old_node.data);
+                    };
+                }
+
+                count += 1;
+                curr = unsafe { (*curr_ptr.as_ptr()).next };
+            }
+        } else {
+            let mut curr = self.tail;
+            let mut count = self.len - 1;
+
+            while let Some(curr_ptr) = curr {
+                if count == index {
+                    unsafe {
+                        let old_node = Box::from_raw(curr_ptr.as_ptr());
+                        if let Some(mut prev) = old_node.prev {
+                            prev.as_mut().next = old_node.next;
+                        };
+
+                        if let Some(mut next) = old_node.next {
+                            next.as_mut().prev = old_node.prev;
+                        }
+
+                        self.len -= 1;
+                        return Some(old_node.data);
+                    };
+                }
+
+                count -= 1;
+                curr = unsafe { (*curr_ptr.as_ptr()).prev };
+            }
+        }
+
+        None
     }
 
     pub fn len(&self) -> usize {
@@ -68,7 +243,35 @@ impl<T: Copy + PartialEq> LinkedList<T> {
     }
 
     pub fn get(&self, index: usize) -> Option<&T> {
-        panic!("Implement")
+        if self.len <= index {
+            panic!("Index out of bounds")
+        }
+
+        if index + 1 <= self.len / 2 {
+            let mut curr = self.head;
+            let mut count = 0;
+
+            while let Some(curr_ptr) = curr {
+                if count == index {
+                    return Some(unsafe { &(*curr_ptr.as_ptr()).data });
+                }
+                count += 1;
+                curr = unsafe { (*curr_ptr.as_ptr()).next };
+            }
+        } else {
+            let mut curr = self.tail;
+            let mut count = self.len - 1;
+
+            while let Some(curr_ptr) = curr {
+                if count == index {
+                    return Some(unsafe { &(*curr_ptr.as_ptr()).data });
+                }
+                count -= 1;
+                curr = unsafe { (*curr_ptr.as_ptr()).prev };
+            }
+        }
+
+        None
     }
 
     pub fn contains(&self, data: T) -> bool {
@@ -136,7 +339,8 @@ mod tests {
         println!("list: {}", list);
 
         let vec = list.collect();
-        assert_eq!(vec, vec![3, 2, 1])
+        assert_eq!(vec, vec![3, 2, 1]);
+        assert_eq!(list.len(), 3);
     }
 
     #[test]
@@ -148,7 +352,8 @@ mod tests {
         println!("list: {}", list);
 
         let vec = list.collect();
-        assert_eq!(vec, vec![1, 2, 3])
+        assert_eq!(vec, vec![1, 2, 3]);
+        assert_eq!(list.len(), 3);
     }
 
     #[test]
@@ -159,20 +364,27 @@ mod tests {
         list.push_back(2);
         list.push_back(3);
 
-        list.insert(4, 5)
+        list.insert(4, 5);
     }
 
     #[test]
     fn insert_works() {
         let mut list = LinkedList::new();
+        list.push_back(1);
+        list.push_back(1);
+        list.push_back(1);
+        list.push_back(1);
+        list.push_back(1);
         list.insert(0, 1);
-        list.insert(1, 3);
-        list.insert(1, 2);
+        list.insert(6, 2);
+        list.insert(2, 2);
+        list.insert(6, 3);
 
         println!("list: {}", list);
 
         let vec = list.collect();
-        assert_eq!(vec, vec![1, 2, 3])
+        assert_eq!(vec, vec![1, 1, 2, 1, 1, 1, 3, 1, 2]);
+        assert_eq!(list.len(), 9);
     }
 
     #[test]
@@ -180,7 +392,8 @@ mod tests {
         let mut list: LinkedList<i32> = LinkedList::new();
         println!("list: {}", list);
 
-        assert_eq!(list.pop_front(), None)
+        assert_eq!(list.pop_front(), None);
+        assert_eq!(list.len(), 0);
     }
 
     #[test]
@@ -197,7 +410,8 @@ mod tests {
         }
 
         let vec = list.collect();
-        assert_eq!(vec, vec![2, 1])
+        assert_eq!(vec, vec![2, 1]);
+        assert_eq!(list.len(), 2);
     }
 
     #[test]
@@ -205,7 +419,8 @@ mod tests {
         let mut list: LinkedList<i32> = LinkedList::new();
         println!("list: {}", list);
 
-        assert_eq!(list.pop_back(), None)
+        assert_eq!(list.pop_back(), None);
+        assert_eq!(list.len(), 0);
     }
 
     #[test]
@@ -233,6 +448,8 @@ mod tests {
             Some(val) => assert_eq!(val, 1),
             None => panic!("Expected to find {}", 1),
         }
+
+        assert_eq!(list.len(), 0);
     }
 
     #[test]
@@ -273,7 +490,8 @@ mod tests {
         }
 
         let vec = list.collect();
-        assert_eq!(vec, vec![2, 4])
+        assert_eq!(vec, vec![2, 4]);
+        assert_eq!(list.len(), 2);
     }
 
     #[test]

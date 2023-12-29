@@ -99,10 +99,10 @@ impl<T: Copy + PartialEq> SinglyLinkedList<T> {
         }
 
         self.head.map(|head_ptr| unsafe {
-            let old_head = Box::from_raw(head_ptr.as_ptr());
-            self.head = old_head.next;
-            self.len = self.len.checked_sub(1).unwrap_or(0);
-            old_head.data
+            let head = Box::from_raw(head_ptr.as_ptr());
+            self.head = head.next;
+            self.len -= 1;
+            head.data
         })
     }
 
