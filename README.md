@@ -5,7 +5,7 @@ Data Structures in Rust
 - [ ] Lists
   - [ ] Vec (covered in [The Rustonomicon](https://doc.rust-lang.org/nomicon/vec/vec.html) 🦀💀)
   - [x] SinglyLinkedList
-  - [ ] LinkedList (Doubly Linked List under the hood)
+  - [x] LinkedList (Doubly Linked List under the hood)
 - [ ] Stacks
   - [ ] LinkedListStack
   - [ ] VecStack
