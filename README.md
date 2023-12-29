@@ -39,4 +39,6 @@ Data Structures in Rust
   - [ ] BTreeSet
   - [ ] LinkedHashSet
 
-Other Todo: -[ ] Rust docs
+Other Todo:
+
+- [ ] Rust docs
