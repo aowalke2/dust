@@ -13,9 +13,9 @@ Data Structures in Rust
   - [x] LinkedListQueue
   - [x] VecQueue
   - [x] CircularBuffer
-- [ ] Double Ended Queue (Deque)
-  - [ ] LinkedListDeque
-  - [ ] VecDeque
+- [x] Double Ended Queue (Deque)
+  - [x] LinkedListDeque
+  - [x] VecDeque
 - [ ] Trees
   - [ ] Binary Tree
   - [ ] Binary Search Tree
