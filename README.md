@@ -21,7 +21,7 @@ Data Structures in Rust
   - [ ] Binary Search Tree
   - [ ] AVLTree
   - [ ] RedBlackTree
-  - [ ] B-Tree
+  - [x] B-Tree
   - [ ] B<sup>+</sup>-Tree
   - [ ] Log-Structured Merge Trees (LSM Trees)
   - [ ] Tries
